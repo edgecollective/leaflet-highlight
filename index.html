@@ -1,0 +1,114 @@
+<html>
+    <head>
+
+        <link rel="stylesheet" href="./style.css" />
+
+
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css">
+
+        <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    </head>
+<body>
+
+    <div id="map"></div>
+<div id="controls"></div>
+
+<script>
+    var map = L.map('map', {
+    zoom: 5,
+    //minZoom:9,
+    center: new L.latLng([50, 12]),
+    layers: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'),
+    layers: [
+
+      L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.png', {
+        attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        subdomains: 'abcd',
+        minZoom: 1,
+        maxZoom: 15
+      })
+    ]
+  });
+
+  var locationLayer = new L.FeatureGroup();
+  var markerTemp = L.marker();
+
+  var iconSettings = {
+    mapIconUrl: '<svg version="1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 149 178"><path fill="{mapIconColor}" stroke="#FFF" stroke-width="6" stroke-miterlimit="10" d="M126 23l-6-6A69 69 0 0 0 74 1a69 69 0 0 0-51 22A70 70 0 0 0 1 74c0 21 7 38 22 52l43 47c6 6 11 6 16 0l48-51c12-13 18-29 18-48 0-20-8-37-22-51z"/><circle fill="{mapIconColorInnerCircle}" cx="74" cy="75" r="61"/><circle fill="#FFF" cx="74" cy="75" r="{pinInnerCircleRadius}"/></svg>',
+    mapIconColor: '#cc756b',
+    mapIconColorInnerCircle: '#fff',
+    pinInnerCircleRadius: 48
+  };
+
+  // icon normal state
+  var divIcon = L.divIcon({
+    className: "leaflet-data-marker",
+    html: L.Util.template(iconSettings.mapIconUrl, iconSettings), //.replace('#','%23'),
+    iconAnchor: [12, 32],
+    iconSize: [25, 30],
+    popupAnchor: [0, -28]
+  });
+
+  // icon active state
+  var divIconActive = L.divIcon({
+    className: "leaflet-data-marker",
+    html: L.Util.template(iconSettings.mapIconUrl, iconSettings), //.replace('#','%23'),
+    iconAnchor: [18, 42],
+    iconSize: [36, 42],
+    popupAnchor: [0, -30]
+  });
+
+  var coords = [
+    [53, 13],
+    [49, 10],
+    [46, 12],
+    [51, 16]
+  ];
+  var markerArray = [];
+  var iMarker = -1;
+
+  function setActiveIcon(marker) {
+    marker.setIcon(divIconActive);
+  };
+
+  $.each(coords, function(i, e) {
+    // create the button
+    $('#controls').append('<button>' + i + '</button>')
+
+    var marker = L.marker(e, {
+      icon: divIcon,
+      id: i
+    });
+
+    locationLayer.addLayer(marker);
+
+    marker.on('mouseover', function(e) {
+      if (iMarker == i) return;
+      setTimeout(setActiveIcon, 10, this);
+      if (iMarker >= 0) markerArray[iMarker].setIcon(divIcon);
+      iMarker = i;
+    });
+
+    marker.on('mouseout', function(e) {
+      this.setIcon(divIcon);
+      iMarker = -1;
+    });
+
+    markerArray[i] = marker;
+  });
+
+  locationLayer.addTo(map);
+
+  $('button').on('click', function(e) {
+    if (iMarker >= 0) markerArray[iMarker].setIcon(divIcon);
+    markerArray[this.innerText].setIcon(divIconActive);
+    iMarker = this.innerText;
+  });
+
+</script>
+
+
+
+</body>
+</html>
